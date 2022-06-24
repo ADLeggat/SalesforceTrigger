@@ -1,5 +1,6 @@
 public with sharing class TriggerHandler {
-    public String sObjectType;
+    private String sObjectName;
+    private List<String> triggerIgnore = new List<String>();
 
     List<Trigger_Class__mdt> triggerClasses {
         get {
@@ -11,12 +12,8 @@ public with sharing class TriggerHandler {
         set;
     }
 
-    public TriggerHandler(String sObjectType) {
-        this.sObjectType = sObjectType;
-    }
-
     List<Trigger_Class__mdt> getTriggerClasses() {
-        Trigger__mdt triggerMeta = Trigger__mdt.getInstance(sObjectType);
+        Trigger__mdt triggerMeta = Trigger__mdt.getInstance(sObjectName);
         if(triggerMeta != null) {
             triggerClasses = [
                 SELECT Id, Class_Name__c, Is_Active__c, Sort_Order__c
@@ -28,7 +25,19 @@ public with sharing class TriggerHandler {
         return triggerClasses;
     }
     
+    public TriggerHandler(String sObjectName) {
+        this.sObjectName = sObjectName;
+    }
+
+    public void addTriggerIgnore(String triggerName) {
+        triggerIgnore.add(triggerName);
+    }
+
     public void run() {
+        if(!Trigger.isExecuting || triggerIgnore.contains(sObjectName)) {
+            return;
+        }
+
         for(Trigger_Class__mdt triggerClassMeta: triggerClasses) {
             if(triggerClassMeta.Is_Active__c) {
                 ITrigger triggerClass = getClassInstance(triggerClassMeta.Class_Name__c);
@@ -45,10 +54,13 @@ public with sharing class TriggerHandler {
         }
 
         Object triggerClass = t.newInstance();
-
         if (!(triggerClass instanceof ITrigger)) {
             throw new IllegalArgumentException('Trigger class must implement ITrigger');
         } 
         return (ITrigger) triggerClass;
     }
+
+    // add methods to consider trigger context, i.e. 
+    // Trigger.isBefore, Trigger.isAfter
+    // Trigger.operationType
 }
