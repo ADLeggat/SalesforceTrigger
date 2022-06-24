@@ -1,4 +1,5 @@
 public with sharing class TriggerHandler {
+    List<System.TriggerOperation> triggerOperations = new List<System.TriggerOperation>();
     private String sObjectName;
     private List<String> triggerIgnore = new List<String>();
 
@@ -41,7 +42,10 @@ public with sharing class TriggerHandler {
         for(Trigger_Class__mdt triggerClassMeta: triggerClasses) {
             if(triggerClassMeta.Is_Active__c) {
                 ITrigger triggerClass = getClassInstance(triggerClassMeta.Class_Name__c);
-                triggerClass.execute();
+                triggerOperations.addAll(triggerClass.setTriggerOperations());
+                
+                execute(triggerClass);
+                // triggerClass.execute();
             }
         }
     }
@@ -60,7 +64,25 @@ public with sharing class TriggerHandler {
         return (ITrigger) triggerClass;
     }
 
-    // add methods to consider trigger context, i.e. 
-    // Trigger.isBefore, Trigger.isAfter
-    // Trigger.operationType
+    private void execute(ITrigger triggerClass) {
+        if(triggerOperations.size() == 0) {
+            throw new ListException('At least one trigger operation must be set');
+        }
+
+        for(System.TriggerOperation triggerOperation: triggerOperations) {
+            if(triggerOperation == Trigger.operationType) {
+                switch on triggerOperation {
+                    when BEFORE_INSERT, AFTER_INSERT, AFTER_UNDELETE  {
+                        triggerClass.execute(Trigger.newMap, null);
+                    }
+                    when BEFORE_UPDATE, AFTER_UPDATE {
+                        triggerClass.execute(Trigger.newMap, Trigger.oldMap);
+                    }
+                    when BEFORE_DELETE, AFTER_DELETE {
+                        triggerClass.execute(null, Trigger.oldMap);
+                    }
+                }
+            }
+        }
+    }
 }
