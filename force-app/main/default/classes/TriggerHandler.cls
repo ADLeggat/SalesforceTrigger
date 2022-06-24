@@ -69,17 +69,19 @@ public with sharing class TriggerHandler {
         }
 
         for(System.TriggerOperation triggerOperation: triggerOperations) {
-            if(triggerOperation == Trigger.operationType) {
-                switch on triggerOperation {
-                    when BEFORE_INSERT, AFTER_INSERT, AFTER_UNDELETE  {
-                        triggerClass.execute(Trigger.newMap, null);
-                    }
-                    when BEFORE_UPDATE, AFTER_UPDATE {
-                        triggerClass.execute(Trigger.newMap, Trigger.oldMap);
-                    }
-                    when BEFORE_DELETE, AFTER_DELETE {
-                        triggerClass.execute(null, Trigger.oldMap);
-                    }
+            if(triggerOperation != Trigger.operationType) {
+                continue;
+            }
+
+            switch on triggerOperation {
+                when BEFORE_INSERT, AFTER_INSERT, AFTER_UNDELETE  {
+                    triggerClass.execute(Trigger.newMap, null);
+                }
+                when BEFORE_UPDATE, AFTER_UPDATE {
+                    triggerClass.execute(Trigger.newMap, Trigger.oldMap);
+                }
+                when BEFORE_DELETE, AFTER_DELETE {
+                    triggerClass.execute(null, Trigger.oldMap);
                 }
             }
         }
