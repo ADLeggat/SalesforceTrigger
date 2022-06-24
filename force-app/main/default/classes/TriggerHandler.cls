@@ -1,7 +1,7 @@
 public with sharing class TriggerHandler {
     List<System.TriggerOperation> triggerOperations = new List<System.TriggerOperation>();
     private String sObjectName;
-    private List<String> triggerIgnore = new List<String>();
+    private static List<String> triggerIgnore = new List<String>();
 
     List<Trigger_Class__mdt> triggerClasses {
         get {
@@ -30,7 +30,7 @@ public with sharing class TriggerHandler {
         this.sObjectName = sObjectName;
     }
 
-    public void addTriggerIgnore(String triggerName) {
+    public static void addTriggerIgnore(String triggerName) {
         triggerIgnore.add(triggerName);
     }
 
@@ -45,7 +45,6 @@ public with sharing class TriggerHandler {
                 triggerOperations.addAll(triggerClass.setTriggerOperations());
                 
                 execute(triggerClass);
-                // triggerClass.execute();
             }
         }
     }
