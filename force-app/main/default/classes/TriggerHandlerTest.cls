@@ -1,6 +1,8 @@
 @IsTest
 public with sharing class TriggerHandlerTest {
     private static final String SOBJECT_TYPE = 'Account';
+    private static Boolean testRunWasSuccessful = false;
+    private static Integer triggerEventsConsumed = 0;
 
     @IsTest
     static void noClassFound() {
@@ -73,6 +75,43 @@ public with sharing class TriggerHandlerTest {
         System.assert(caughtException instanceof ListException);
     }
 
+    @IsTest
+    static void run() {
+        Trigger_Class__mdt triggerClassMetadata = buildTriggerClassMetadata(
+            ClassWithTriggerOperations.class.getName()
+        );
+
+        Test.startTest();
+        TriggerHandler handler = new TriggerHandler(SOBJECT_TYPE);
+        handler.triggerClasses = new List<Trigger_Class__mdt> {
+            triggerClassMetadata
+        };
+        handler.executeTriggerClasses();
+        Test.stopTest();
+
+        System.assertEquals(true, testRunWasSuccessful, 'Trigger class execution was successful');
+        System.assertEquals(3, triggerEventsConsumed, 'Three trigger events consumed');
+    }
+
+    @IsTest
+    static void triggerIgnore() {
+        TriggerHandler.addTriggerIgnore(SOBJECT_TYPE);
+
+        Trigger_Class__mdt triggerClassMetadata = buildTriggerClassMetadata(
+            ClassWithTriggerOperations.class.getName()
+        );
+
+        Test.startTest();
+        TriggerHandler handler = new TriggerHandler(SOBJECT_TYPE);
+        handler.triggerClasses = new List<Trigger_Class__mdt> {
+            triggerClassMetadata
+        };
+        handler.run();
+        Test.stopTest();
+
+        System.assertEquals(false, testRunWasSuccessful, 'Trigger was ignored');
+    }
+
     static Trigger_Class__mdt buildTriggerClassMetadata(String className) {
 
         Trigger_Class__mdt triggerClassMetadata = new Trigger_Class__mdt(
@@ -91,8 +130,21 @@ public with sharing class TriggerHandlerTest {
             return new List<System.TriggerOperation>();
         }
 
-        public void execute(Map<Id, SObject> newMap, Map<Id, SObject> oldMap) {
+        public void execute(Map<Id, SObject> newMap, Map<Id, SObject> oldMap) {}
+    }
 
+    public class ClassWithTriggerOperations implements ITrigger {
+        public List<System.TriggerOperation> setTriggerOperations() {
+            return new List<System.TriggerOperation> {
+                System.TriggerOperation.BEFORE_INSERT,
+                System.TriggerOperation.BEFORE_UPDATE,
+                System.TriggerOperation.BEFORE_DELETE
+            };
+        }
+
+        public void execute(Map<Id, SObject> newMap, Map<Id, SObject> oldMap) {
+            testRunWasSuccessful = true;
+            triggerEventsConsumed += 1;
         }
     }
 }

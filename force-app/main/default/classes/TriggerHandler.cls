@@ -35,10 +35,14 @@ public with sharing class TriggerHandler {
     }
 
     public void run() {
-        if(!Trigger.isExecuting || triggerIgnore.contains(sObjectName)) {
+        if(triggerIgnore.contains(sObjectName) || !Trigger.isExecuting) {
             return;
         }
 
+        executeTriggerClasses();
+    }
+
+    @TestVisible private void executeTriggerClasses() {
         for(Trigger_Class__mdt triggerClassMeta: triggerClasses) {
             if(triggerClassMeta.Is_Active__c) {
                 ITrigger triggerClass = getClassInstance(triggerClassMeta.Class_Name__c);
@@ -69,7 +73,8 @@ public with sharing class TriggerHandler {
         }
 
         for(System.TriggerOperation triggerOperation: triggerOperations) {
-            if(triggerOperation != Trigger.operationType) {
+
+            if(Trigger.operationType != null && triggerOperation != Trigger.operationType) {
                 continue;
             }
 
