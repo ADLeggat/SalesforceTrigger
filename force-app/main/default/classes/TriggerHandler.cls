@@ -3,7 +3,7 @@ public with sharing class TriggerHandler {
     private String sObjectName;
     private static List<String> triggerIgnore = new List<String>();
 
-    List<Trigger_Class__mdt> triggerClasses {
+    @TestVisible List<Trigger_Class__mdt> triggerClasses {
         get {
             if(triggerClasses == null) {
                 triggerClasses = getTriggerClasses();
@@ -49,7 +49,7 @@ public with sharing class TriggerHandler {
         }
     }
 
-    private ITrigger getClassInstance(String className) {
+    @TestVisible private ITrigger getClassInstance(String className) {
         Type t = Type.forName(className);
 
         if(t == null) {
@@ -58,12 +58,12 @@ public with sharing class TriggerHandler {
 
         Object triggerClass = t.newInstance();
         if (!(triggerClass instanceof ITrigger)) {
-            throw new IllegalArgumentException('Trigger class must implement ITrigger');
+            throw new TypeException('Trigger class must implement ITrigger');
         } 
         return (ITrigger) triggerClass;
     }
 
-    private void execute(ITrigger triggerClass) {
+    @TestVisible private void execute(ITrigger triggerClass) {
         if(triggerOperations.size() == 0) {
             throw new ListException('At least one trigger operation must be set');
         }

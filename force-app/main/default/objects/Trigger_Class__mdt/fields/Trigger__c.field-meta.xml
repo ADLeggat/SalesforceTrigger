@@ -7,7 +7,7 @@
     <referenceTo>Trigger__mdt</referenceTo>
     <relationshipLabel>Trigger Classes</relationshipLabel>
     <relationshipName>Trigger_Classes</relationshipName>
-    <required>true</required>
+    <required>false</required>
     <type>MetadataRelationship</type>
     <unique>false</unique>
 </CustomField>
