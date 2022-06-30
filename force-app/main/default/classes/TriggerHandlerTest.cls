@@ -3,6 +3,7 @@ public with sharing class TriggerHandlerTest {
     private static final String SOBJECT_TYPE = 'Account';
     private static Boolean testRunWasSuccessful = false;
     private static Integer triggerEventsConsumed = 0;
+    private static Integer objectIdNumber = 1;
 
     @IsTest
     static void noClassFound() {
@@ -130,6 +131,28 @@ public with sharing class TriggerHandlerTest {
         Test.stopTest();
 
         System.assertEquals(false, testRunWasSuccessful, 'Trigger class inactive');
+    }
+
+    @IsTest
+    static void triggerInactive() {
+        TriggerHandler.addTriggerIgnore(SOBJECT_TYPE);
+
+        Test.startTest();
+        TriggerHandler handler = new TriggerHandler(SOBJECT_TYPE);
+        handler.triggerMeta = buildTriggerMeta(SOBJECT_TYPE);
+        handler.run();
+        Test.stopTest();
+
+        System.assertEquals(false, testRunWasSuccessful, 'Trigger class inactive');
+    }
+
+    private static Trigger__mdt buildTriggerMeta(String sObjectName) {
+        Trigger__mdt triggerMetadata = new Trigger__mdt(
+            MasterLabel = sObjectName,
+            Is_Active__c = false
+        );
+
+        return triggerMetadata;
     }
 
     static Trigger_Class__mdt buildTriggerClassMetadata(String className) {

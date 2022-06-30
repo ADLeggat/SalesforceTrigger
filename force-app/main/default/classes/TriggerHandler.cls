@@ -3,7 +3,7 @@ public with sharing class TriggerHandler {
     private String sObjectName;
     private static List<String> triggerIgnore = new List<String>();
 
-    @TestVisible List<Trigger_Class__mdt> triggerClasses {
+    @TestVisible private List<Trigger_Class__mdt> triggerClasses {
         get {
             if(triggerClasses == null) {
                 triggerClasses = getTriggerClasses();
@@ -13,17 +13,7 @@ public with sharing class TriggerHandler {
         set;
     }
 
-    Trigger__mdt triggerMeta {
-        get {
-            if(triggerMeta == null) {
-                triggerMeta = Trigger__mdt.getInstance(sObjectName);
-            }
-            return triggerMeta;
-        }
-        set;
-    }
-
-    List<Trigger_Class__mdt> getTriggerClasses() {
+    private List<Trigger_Class__mdt> getTriggerClasses() {
         if(triggerMeta != null) {
             triggerClasses = [
                 SELECT Id, Class_Name__c, Is_Active__c, Sort_Order__c
@@ -33,6 +23,16 @@ public with sharing class TriggerHandler {
             ];
         }
         return triggerClasses;
+    }
+
+    @TestVisible private Trigger__mdt triggerMeta {
+        get {
+            if(triggerMeta == null) {
+                triggerMeta = Trigger__mdt.getInstance(sObjectName);
+            }
+            return triggerMeta;
+        }
+        set;
     }
     
     public TriggerHandler(String sObjectName) {
