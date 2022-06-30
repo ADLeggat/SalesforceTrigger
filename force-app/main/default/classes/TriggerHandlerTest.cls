@@ -112,6 +112,26 @@ public with sharing class TriggerHandlerTest {
         System.assertEquals(false, testRunWasSuccessful, 'Trigger was ignored');
     }
 
+    @IsTest
+    static void triggerClassInactive() {
+        TriggerHandler.addTriggerIgnore(SOBJECT_TYPE);
+
+        Trigger_Class__mdt triggerClassMetadata = buildTriggerClassMetadata(
+            ClassWithTriggerOperations.class.getName()
+        );
+        triggerClassMetadata.Is_Active__c = false;
+
+        Test.startTest();
+        TriggerHandler handler = new TriggerHandler(SOBJECT_TYPE);
+        handler.triggerClasses = new List<Trigger_Class__mdt> {
+            triggerClassMetadata
+        };
+        handler.run();
+        Test.stopTest();
+
+        System.assertEquals(false, testRunWasSuccessful, 'Trigger class inactive');
+    }
+
     static Trigger_Class__mdt buildTriggerClassMetadata(String className) {
 
         Trigger_Class__mdt triggerClassMetadata = new Trigger_Class__mdt(
