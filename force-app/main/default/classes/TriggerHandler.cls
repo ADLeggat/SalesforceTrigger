@@ -13,8 +13,17 @@ public with sharing class TriggerHandler {
         set;
     }
 
+    Trigger__mdt triggerMeta {
+        get {
+            if(triggerMeta == null) {
+                triggerMeta = Trigger__mdt.getInstance(sObjectName);
+            }
+            return triggerMeta;
+        }
+        set;
+    }
+
     List<Trigger_Class__mdt> getTriggerClasses() {
-        Trigger__mdt triggerMeta = Trigger__mdt.getInstance(sObjectName);
         if(triggerMeta != null) {
             triggerClasses = [
                 SELECT Id, Class_Name__c, Is_Active__c, Sort_Order__c
@@ -35,7 +44,7 @@ public with sharing class TriggerHandler {
     }
 
     public void run() {
-        if(triggerIgnore.contains(sObjectName) || !Trigger.isExecuting) {
+        if(triggerIgnore.contains(sObjectName) || !triggerMeta.Is_Active__c || !Trigger.isExecuting) {
             return;
         }
 
